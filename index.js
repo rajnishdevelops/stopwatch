@@ -1,70 +1,70 @@
 let timer = 0;
-        let startTime;
-        let isRunning = false;
-        let laps = [];
+let startTime;
+let isRunning = false;
+let laps = [];
+let timerId;
 
-        function start() {
-            if (isRunning) throw new Error('Stopwatch is already running.');
-            isRunning = true;
-            startTime = Date.now() - timer;
-            timerId = setInterval(step, 10);
-        }
+function start() {
+    if (isRunning) return;
+    isRunning = true;
+    startTime = Date.now() - timer;
+    timerId = setInterval(step, 10);
+}
 
-        function stop() {
-            if (!isRunning) throw new Error('Stopwatch is already stopped.');
-            isRunning = false;
-            clearInterval(timerId);
-            timerId = undefined;
-        }
+function stop() {
+    if (!isRunning) return;
+    isRunning = false;
+    clearInterval(timerId);
+}
 
-        function reset() {
-            start();
-            stop();
-            timer = 0;
-            updateDisplay();
-        }
+function reset() {
+    stop();
+    timer = 0;
+    laps = [];
+    updateDisplay();
+    updateLaps();
+}
 
-        function lap() {
-            const lapTime = getFormattedTime(timer);
-            laps.push(lapTime);
-            updateLaps();
-        }
+function lap() {
+    if (!isRunning) return;
+    const lapTime = getFormattedTime(timer);
+    laps.push (lapTime);
+    updateLaps();
+}
 
-        function step() {
-            timer = Date.now() - startTime;
-            updateDisplay();
-        }
+function step() {
+    timer = Date.now() - startTime;
+    updateDisplay();
+}
 
-        function getFormattedTime(time) {
-            const minutes = Math.floor(time / 60000);
-            const seconds = Math.floor((time % 60000) / 1000);
-            const hundreds = Math.floor((time % 1000) / 10);
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${hundreds.toString().padStart(2, '0')}`;
-        }
+function updateDisplay() {
+    const display = document.getElementById('stopwatch');
+    display.textContent = getFormattedTime(timer);
+}
 
-        function updateDisplay() {
-            const display = document.getElementById('stopwatch');
-            display.textContent = getFormattedTime(timer);
-        }
+function updateLaps() {
+    const lapsList = document.getElementById('laps');
+    lapsList.innerHTML = '';
+    laps.forEach((lap, index) => {
+        const li = document.createElement('li');
+        li.textContent = `Lap ${index + 1}: ${lap}`;
+        lapsList.appendChild(li);
+    });
+}
 
-        function updateLaps() {
-            const lapList = document.getElementById('laps');
-            lapList.innerHTML = '';
-            laps.forEach((lap, index) => {
-                const lapItem = document.createElement('li');
-                lapItem.textContent = `${index + 1}. ${lap}`;
-                lapList.appendChild(lapItem);
-            });
-        }
+function getFormattedTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+}
 
-        const startBtn = document.getElementById('startBtn');
-        startBtn.addEventListener('click', start);
+document.getElementById('startBtn').addEventListener('click', start);
+document.getElementById('pauseBtn').addEventListener('click', stop);
+document.getElementById('resetBtn').addEventListener('click', reset);
+document.getElementById('lapBtn').addEventListener('click', lap);
 
-        const pauseBtn = document.getElementById('pauseBtn');
-        pauseBtn.addEventListener('click', stop);
-
-        const resetBtn = document.getElementById('resetBtn');
-        resetBtn.addEventListener('click', reset);
-
-        const lapBtn = document.getElementById('lapBtn');
-        lapBtn.addEventListener('click', lap);
+document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+});
